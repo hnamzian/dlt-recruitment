@@ -79,12 +79,13 @@ contract CustomToken is ERC20, Ownable {
     }
 
     function unstakeAll() public returns (bool) {
+        _reward(_msgSender(), true);
         _unstake(_msgSender());
         return true;
     }
 
     function reward() public returns (bool) {
-        _reward(_msgSender());
+        _reward(_msgSender(), false);
         return true;
     }
 
@@ -128,14 +129,14 @@ contract CustomToken is ERC20, Ownable {
     // This method should allow withdrawing cumulated reward for all staked funds of the user's.
     // Any required constrains and checks should be coded as well.
     // Important! Withdrawing reward should not decrease the stake, stake should be rolled over for the future automatically.
-    function _reward(address _address) internal {
+    function _reward(address _address, bool _unstaked) internal {
         // TODO implement this method
         uint256 _rewarded = rewardsOf(_address);
         uint256 _profits = _getProofOfStakeReward(_address);
 
         uint256 _toBeRewarded = _profits - _rewarded;
         if (_toBeRewarded > 0) {
-            _rewards[_address] = _profits;
+            _rewards[_address] = _unstaked ? 0 : _profits;
             _totalRewards += _totalRewards + _toBeRewarded;
 
             _mint(_address, _toBeRewarded);
