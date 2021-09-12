@@ -32,7 +32,7 @@ describe("CustomToken - Initialization", async () => {
 
     const balance = await customToken.balanceOf(owner.address);
     const contractOwner = await customToken.owner();
-    
+
     expect(balance).to.be.equal(minTotalSupply);
     expect(contractOwner).to.be.equal(owner.address)
   })
@@ -104,7 +104,7 @@ describe("CustomToken - Stake", async () => {
     ];
 
     for (let i = 0; i < rewardTimestamps.length; i++) {
-      const wiatTime = i === 0 ? rewardTimestamps[0] : rewardTimestamps[i] - rewardTimestamps[i-1];
+      const wiatTime = i === 0 ? rewardTimestamps[0] : rewardTimestamps[i] - rewardTimestamps[i - 1];
       ethers.provider.send("evm_increaseTime", [wiatTime]);
 
       await customToken.reward();
@@ -118,5 +118,22 @@ describe("CustomToken - Stake", async () => {
       expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
       expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
     }
+  })
+  it("should revert rewarding more after stakeMaxAge", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const toBeStaked = await customToken.balanceOf(owner.address);
+
+    await customToken.approve(customToken.address, toBeStaked);
+
+    await customToken.stakeAll();
+
+    ethers.provider.send("evm_increaseTime", [stakeMaxAge]);
+
+    await customToken.reward();
+
+    ethers.provider.send("evm_increaseTime", [stakeMaxAge]);
+
+    expect(customToken.reward()).to.be.revertedWith("CustomToken: No debt of reward");
   })
 })
