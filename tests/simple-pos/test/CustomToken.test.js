@@ -6,6 +6,7 @@ let customToken;
 const minTotalSupply = parseUnits("1000000");
 const maxTotalSupply = parseUnits("10000000");
 const DAY_IN_SECONDS = 24 * 60 * 60;
+const YEAR_IN_SECONDS = 365 * DAY_IN_SECONDS;
 const stakeMinAge = 1 * DAY_IN_SECONDS;
 const stakeMaxAge = 30 * DAY_IN_SECONDS;
 const stakePrecision = 18;
@@ -86,5 +87,36 @@ describe("CustomToken - Stake", async () => {
     expect(
       customToken.unstakeAll()
     ).to.be.revertedWith("CustomToken: No Staked Balance");
+  })
+  it("should get rewards for staking tokens", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const toBeStaked = await customToken.balanceOf(owner.address);
+
+    await customToken.approve(customToken.address, toBeStaked);
+
+    await customToken.stakeAll();
+
+    const rewardTimestamps = [
+      Math.floor(stakeMaxAge / 4),
+      Math.floor(stakeMaxAge / 2),
+      stakeMaxAge
+    ];
+
+    for (let i = 0; i < rewardTimestamps.length; i++) {
+      const wiatTime = i === 0 ? rewardTimestamps[0] : rewardTimestamps[i] - rewardTimestamps[i-1];
+      ethers.provider.send("evm_increaseTime", [wiatTime]);
+
+      await customToken.reward();
+
+      const balance = await customToken.balanceOf(owner.address);
+      const rewarded = await customToken.rewardsOf(owner.address);
+
+      const rewardRate = (rewardTimestamps[i] / YEAR_IN_SECONDS) * 0.1;
+      const rewards = +formatUnits(toBeStaked) * (rewardTimestamps[i] / YEAR_IN_SECONDS) * 0.1;
+
+      expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
+      expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
+    }
   })
 })
