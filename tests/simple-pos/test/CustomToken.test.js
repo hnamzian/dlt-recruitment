@@ -10,21 +10,22 @@ const stakeMinAge = 1 * DAY_IN_SECONDS;
 const stakeMaxAge = 30 * DAY_IN_SECONDS;
 const stakePrecision = 18;
 
-describe("CustomToken", async () => {
-  beforeEach(async () => {
-    const [deployer] = await ethers.getSigners();
+beforeEach(async () => {
+  const [deployer] = await ethers.getSigners();
 
-    const CustomToken = await ethers.getContractFactory("CustomToken");
-    customToken = await CustomToken.deploy();
-    await customToken["initialize(address,uint256,uint256,uint64,uint64,uint8)"](
-      deployer.address,
-      minTotalSupply,
-      maxTotalSupply,
-      stakeMinAge,
-      stakeMaxAge,
-      stakePrecision
-    );
-  });
+  const CustomToken = await ethers.getContractFactory("CustomToken");
+  customToken = await CustomToken.deploy();
+  await customToken["initialize(address,uint256,uint256,uint64,uint64,uint8)"](
+    deployer.address,
+    minTotalSupply,
+    maxTotalSupply,
+    stakeMinAge,
+    stakeMaxAge,
+    stakePrecision
+  );
+});
+
+describe("CustomToken - Initialization", async () => {
   it("should verify vontract is initialized", async () => {
     const [owner] = await ethers.getSigners();
 
@@ -33,5 +34,23 @@ describe("CustomToken", async () => {
     
     expect(balance).to.be.equal(minTotalSupply);
     expect(contractOwner).to.be.equal(owner.address)
+  })
+})
+
+describe("CustomToken - Stake", async () => {
+  it("should stake all tokens", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const toBeStaked = await customToken.balanceOf(owner.address);
+
+    const approveTnx = await customToken.approve(customToken.address, toBeStaked);
+    await approveTnx.wait();
+
+    await customToken.allowance(owner.address, customToken.address);
+    await customToken.stakeAll();
+
+    const staked = await customToken.stakeOf(owner.address);
+
+    expect(staked).to.be.equal(toBeStaked);
   })
 })
