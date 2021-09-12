@@ -80,7 +80,7 @@ contract CustomToken is ERC20, Ownable {
     // Any required constrains and checks should be coded as well.
     function _stake(address sender, uint256 amount) internal {
         // TODO implement this method
-        require(allowance(_msgSender(), address(this)) >= balanceOf(_msgSender()), "CustomToken: Insufficiet Allowance");
+        require(allowance(_msgSender(), address(this)) >= balanceOf(_msgSender()), "CustomToken: Insufficient Allowance");
         
         stakeStruct[] storage _stakesOf = _stakes[sender];
         stakeStruct memory newStake = stakeStruct(
@@ -96,6 +96,18 @@ contract CustomToken is ERC20, Ownable {
     // Any required constrains and checks should be coded as well.
     function _unstake(address sender) internal {
         // TODO implement this method
+        // loop over to sum up stake balance and zeroize stake history at once to consume less Gas
+        uint256 _staked = 0;
+        for (uint256 i = 0; i < _stakes[sender].length; i++) {
+            // ToDo use SafeMath
+            // ToDo verify uin64 is enough for stake amount
+            _staked += _stakes[sender][i].amount;
+            _stakes[sender][i].amount = 0;
+        }
+
+        require(_staked > 0, "CustomToken: No Staked Balance");
+
+        ERC20(this).transfer(sender, _staked);
     }
 
     // This method should allow withdrawing cumulated reward for all staked funds of the user's.
