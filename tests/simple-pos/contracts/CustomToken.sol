@@ -92,8 +92,11 @@ contract CustomToken is ERC20, Ownable {
     // Any required constrains and checks should be coded as well.
     function _stake(address sender, uint256 amount) internal {
         // TODO implement this method
-        require(allowance(_msgSender(), address(this)) >= balanceOf(_msgSender()), "CustomToken: Insufficient Allowance");
-        
+        require(
+            allowance(_msgSender(), address(this)) >= balanceOf(_msgSender()),
+            "CustomToken: Insufficient Allowance"
+        );
+
         stakeStruct[] storage _stakesOf = _stakes[sender];
         stakeStruct memory newStake = stakeStruct(
             amount,
@@ -101,7 +104,11 @@ contract CustomToken is ERC20, Ownable {
         );
         _stakesOf.push(newStake);
 
-        ERC20(this).transferFrom(_msgSender(), address(this), balanceOf(_msgSender()));
+        ERC20(this).transferFrom(
+            _msgSender(),
+            address(this),
+            balanceOf(_msgSender())
+        );
     }
 
     // This method should allow withdrawing staked funds
@@ -109,13 +116,9 @@ contract CustomToken is ERC20, Ownable {
     function _unstake(address sender) internal {
         // TODO implement this method
         // loop over to sum up stake balance and zeroize stake history at once to consume less Gas
-        uint256 _staked = 0;
-        for (uint256 i = 0; i < _stakes[sender].length; i++) {
-            // ToDo use SafeMath
-            // ToDo verify uin64 is enough for stake amount
-            _staked += _stakes[sender][i].amount;
-            _stakes[sender][i].amount = 0;
-        }
+        uint256 _staked = stakeOf(sender);
+        
+        delete _stakes[sender];
 
         require(_staked > 0, "CustomToken: No Staked Balance");
 
@@ -129,14 +132,14 @@ contract CustomToken is ERC20, Ownable {
         // TODO implement this method
         uint256 _rewarded = rewardsOf(_address);
         uint256 _profits = _getProofOfStakeReward(_address);
-        // revert if profits = 0 || has taken all rewards
-        require(_profits > _rewarded, "CustomToken: No debt of reward");
 
         uint256 _toBeRewarded = _profits - _rewarded;
-        _rewards[_address] = _profits;
-        _totalRewards += _totalRewards + _toBeRewarded;
+        if (_toBeRewarded > 0) {
+            _rewards[_address] = _profits;
+            _totalRewards += _totalRewards + _toBeRewarded;
 
-        _mint(_address, _toBeRewarded);
+            _mint(_address, _toBeRewarded);
+        }
     }
 
     function _getProofOfStakeReward(address _address)
@@ -172,7 +175,9 @@ contract CustomToken is ERC20, Ownable {
             if (nCoinSeconds > _stakeMaxAge) nCoinSeconds = _stakeMaxAge;
 
             _coinAge = _coinAge.add(
-                uint256(_stakes[_address][i].amount).mul(nCoinSeconds).div(1 days)
+                uint256(_stakes[_address][i].amount).mul(nCoinSeconds).div(
+                    1 days
+                )
             );
         }
 
