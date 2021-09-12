@@ -116,8 +116,8 @@ describe("CustomToken - Stake", async () => {
       const rewardRate = (Math.min(stakeMaxAge, rewardTimestamps[i]) / YEAR_IN_SECONDS) * 0.1;
       const rewards = +formatUnits(toBeStaked) * rewardRate;
 
-      expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
-      expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
+      expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-1)
+      expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-1)
     }
   })
   it("should get rewards proportion to stakeMaxAge even afterwards", async () => {
@@ -139,7 +139,51 @@ describe("CustomToken - Stake", async () => {
     const rewardRate = (stakeMaxAge / YEAR_IN_SECONDS) * 0.1;
     const rewards = +formatUnits(toBeStaked) * rewardRate;
 
-    expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
-    expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
+    expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-1)
+    expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-1)
+  })
+  it("should test stake-reward-unstake cycle succesfully", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const untilReward = (stakeMaxAge / 3);
+    const untilUnstake = stakeMaxAge * 2;
+
+    for (let i = 0; i < 5; i++) {
+      // stake all balance
+      const toBeStaked = await customToken.balanceOf(owner.address);
+
+      await customToken.approve(customToken.address, toBeStaked);
+
+      await customToken.stakeAll();
+
+      // get rewards
+      ethers.provider.send("evm_increaseTime", [untilReward]);
+
+      await customToken.reward();
+
+      let balance = await customToken.balanceOf(owner.address);
+      let rewarded = await customToken.rewardsOf(owner.address);
+
+      let rewardRate = (Math.min(stakeMaxAge, untilReward) / YEAR_IN_SECONDS) * 0.1;
+      let rewards = +formatUnits(toBeStaked) * rewardRate;
+
+      expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-1)
+      expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-1)
+
+      // unstake all tokens
+      ethers.provider.send("evm_increaseTime", [untilUnstake]);
+
+      await customToken.unstakeAll();
+
+      const staked = await customToken.stakeOf(owner.address);
+      balance = await customToken.balanceOf(owner.address);
+
+      rewardRate = (Math.min(stakeMaxAge, untilReward + untilUnstake) / YEAR_IN_SECONDS) * 0.1;
+      rewards = +formatUnits(toBeStaked) * rewardRate;
+      const desiredBalance = rewards + +formatUnits(toBeStaked);
+
+      expect(staked).to.be.equal(0);
+      expect(+formatUnits(balance)).to.be.closeTo(desiredBalance, 1e-1)
+    }
   })
 })
