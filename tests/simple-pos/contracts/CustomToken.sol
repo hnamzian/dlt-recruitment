@@ -127,6 +127,16 @@ contract CustomToken is ERC20, Ownable {
     // Important! Withdrawing reward should not decrease the stake, stake should be rolled over for the future automatically.
     function _reward(address _address) internal {
         // TODO implement this method
+        uint256 _rewarded = rewardsOf(_address);
+        uint256 _profits = _getProofOfStakeReward(_address);
+        // revert if profits = 0 || has taken all rewards
+        require(_profits > _rewarded, "CustomToken: No debt of reward");
+
+        uint256 _toBeRewarded = _profits - _rewarded;
+        _rewards[_address] = _profits;
+        _totalRewards += _totalRewards + _toBeRewarded;
+
+        _mint(_address, _toBeRewarded);
     }
 
     function _getProofOfStakeReward(address _address)
