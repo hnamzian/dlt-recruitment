@@ -80,4 +80,11 @@ describe("CustomToken - Stake", async () => {
     const staked = await customToken.stakeOf(owner.address);
     expect(staked).to.be.equal(0);
   })
+  it("should revert unstaking token when staked balance is zero", async () => {
+    const [owner] = await ethers.getSigners();
+
+    expect(
+      customToken.unstakeAll()
+    ).to.be.revertedWith("CustomToken: No Staked Balance");
+  })
 })
