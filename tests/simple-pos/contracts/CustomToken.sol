@@ -1,8 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
 
-import "./ERC20.sol";
-import "./Ownable.sol";
-import "./SafeMath.sol";
+pragma solidity 0.5.16;
+
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
  * @dev Extension of {ERC20} that adds staking mechanism.
@@ -97,7 +99,7 @@ contract CustomToken is ERC20, Ownable {
         uint256 _coinAge = _getCoinAge(_address, _now);
         if (_coinAge <= 0) return 0;
 
-        uint256 interest = getAnnualInterest();
+        uint256 interest = _getAnnualInterest();
         uint256 rewarded = (_coinAge * interest).div(365 * 10**_stakePrecision);
 
         return rewarded;
@@ -123,13 +125,13 @@ contract CustomToken is ERC20, Ownable {
         return _maxInterestRate;
     }
 
-    function _increaseBalance(address account, uint256 amount) internal {
-        require(account != address(0), "Balance increase from the zero address");
-        _balances[account] = _balances[account].add(amount);
-    }
+    // function _increaseBalance(address account, uint256 amount) internal {
+    //     require(account != address(0), "Balance increase from the zero address");
+    //     _balances[account] = _balances[account].add(amount);
+    // }
 
-    function _decreaseBalance(address account, uint256 amount) internal {
-        require(account != address(0), "Balance decrease from the zero address");
-        _balances[account] = _balances[account].sub(amount, "Balance decrease amount exceeds balance");
-    }
+    // function _decreaseBalance(address account, uint256 amount) internal {
+    //     require(account != address(0), "Balance decrease from the zero address");
+    //     _balances[account] = _balances[account].sub(amount, "Balance decrease amount exceeds balance");
+    // }
 }
