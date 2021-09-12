@@ -29,10 +29,13 @@ contract CustomToken is ERC20, Ownable {
     mapping(address => stakeStruct[]) internal _stakes;
 
     function initialize(
-        address sender, uint256 minTotalSupply, uint256 maxTotalSupply, uint64 stakeMinAge, uint64 stakeMaxAge,
+        address sender,
+        uint256 minTotalSupply,
+        uint256 maxTotalSupply,
+        uint64 stakeMinAge,
+        uint64 stakeMaxAge,
         uint8 stakePrecision
-    ) public initializer
-    {
+    ) public initializer {
         Ownable.initialize(sender);
 
         _minTotalSupply = minTotalSupply;
@@ -45,14 +48,14 @@ contract CustomToken is ERC20, Ownable {
         _stakeMaxAge = uint256(stakeMaxAge);
 
         _maxInterestRate = uint256(10**17); // 10% annual interest
-        _stakeMinAmount = uint256(10**18);  // min stake of 1 token
+        _stakeMinAmount = uint256(10**18); // min stake of 1 token
     }
 
     function stakeOf(address account) public view returns (uint256) {
         if (_stakes[account].length <= 0) return 0;
         uint256 stake = 0;
 
-        for (uint i = 0; i < _stakes[account].length; i++) {
+        for (uint256 i = 0; i < _stakes[account].length; i++) {
             stake = stake.add(uint256(_stakes[account][i].amount));
         }
         return stake;
@@ -92,7 +95,11 @@ contract CustomToken is ERC20, Ownable {
         // TODO implement this method
     }
 
-    function _getProofOfStakeReward(address _address) internal view returns (uint256) {
+    function _getProofOfStakeReward(address _address)
+        internal
+        view
+        returns (uint256)
+    {
         require((now >= _stakeStartTime) && (_stakeStartTime > 0));
 
         uint256 _now = now;
@@ -105,23 +112,30 @@ contract CustomToken is ERC20, Ownable {
         return rewarded;
     }
 
-    function _getCoinAge(address _address, uint256 _now) internal view returns (uint256) {
+    function _getCoinAge(address _address, uint256 _now)
+        internal
+        view
+        returns (uint256)
+    {
         if (_stakes[_address].length <= 0) return 0;
         uint256 _coinAge = 0;
 
-        for (uint i = 0; i < _stakes[_address].length; i++) {
-            if (_now < uint256(_stakes[_address][i].time).add(_stakeMinAge)) continue;
+        for (uint256 i = 0; i < _stakes[_address].length; i++) {
+            if (_now < uint256(_stakes[_address][i].time).add(_stakeMinAge))
+                continue;
 
             uint256 nCoinSeconds = _now.sub(uint256(_stakes[_address][i].time));
             if (nCoinSeconds > _stakeMaxAge) nCoinSeconds = _stakeMaxAge;
 
-            _coinAge = _coinAge.add(uint256(_stakes[_address][i].amount) * nCoinSeconds.div(1 days));
+            _coinAge = _coinAge.add(
+                uint256(_stakes[_address][i].amount) * nCoinSeconds.div(1 days)
+            );
         }
 
         return _coinAge;
     }
 
-    function _getAnnualInterest() internal view returns(uint256) {
+    function _getAnnualInterest() internal view returns (uint256) {
         return _maxInterestRate;
     }
 
