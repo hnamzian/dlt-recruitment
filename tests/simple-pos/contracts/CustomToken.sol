@@ -125,13 +125,13 @@ contract CustomToken is ERC20, Ownable {
         return _maxInterestRate;
     }
 
-    function _increaseBalance(address account, uint256 amount) internal {
-        require(account != address(0), "Balance increase from the zero address");
-        _balances[account] = _balances[account].add(amount);
-    }
+    // function _increaseBalance(address account, uint256 amount) internal {
+    //     require(account != address(0), "Balance increase from the zero address");
+    //     _balances[account] = _balances[account].add(amount);
+    // }
 
-    function _decreaseBalance(address account, uint256 amount) internal {
-        require(account != address(0), "Balance decrease from the zero address");
-        _balances[account] = _balances[account].sub(amount, "Balance decrease amount exceeds balance");
-    }
+    // function _decreaseBalance(address account, uint256 amount) internal {
+    //     require(account != address(0), "Balance decrease from the zero address");
+    //     _balances[account] = _balances[account].sub(amount, "Balance decrease amount exceeds balance");
+    // }
 }
