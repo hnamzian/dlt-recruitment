@@ -31,6 +31,7 @@ contract CustomToken is ERC20, Ownable {
 
     // total amount of tokens rewarded to each staker address
     mapping(address => uint256) internal _rewards;
+    mapping(address => uint256) internal _allTimeRewards;
     uint256 internal _totalRewards;
 
     function initialize(
@@ -68,6 +69,10 @@ contract CustomToken is ERC20, Ownable {
 
     function rewardsOf(address rewardee_) public view returns (uint256) {
         return _rewards[rewardee_];
+    }
+
+    function allTimeRewardsOf(address rewardee_) public view returns (uint256) {
+        return _allTimeRewards[rewardee_];
     }
 
     function totalRewards() public view returns (uint256) {
@@ -135,10 +140,11 @@ contract CustomToken is ERC20, Ownable {
         uint256 _rewarded = rewardsOf(_address);
         uint256 _profits = _getProofOfStakeReward(_address);
 
-        uint256 _toBeRewarded = _profits - _rewarded;
+        uint256 _toBeRewarded = _profits.sub(_rewarded);
         if (_toBeRewarded > 0) {
             _rewards[_address] = _unstaked ? 0 : _profits;
-            _totalRewards += _totalRewards + _toBeRewarded;
+            _allTimeRewards[_address] = _allTimeRewards[_address].add(_toBeRewarded);
+            _totalRewards = _totalRewards.add(_toBeRewarded);
 
             _mint(_address, _toBeRewarded);
         }
