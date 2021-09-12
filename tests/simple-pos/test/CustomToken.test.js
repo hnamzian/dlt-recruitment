@@ -43,14 +43,24 @@ describe("CustomToken - Stake", async () => {
 
     const toBeStaked = await customToken.balanceOf(owner.address);
 
-    const approveTnx = await customToken.approve(customToken.address, toBeStaked);
-    await approveTnx.wait();
+    await customToken.approve(customToken.address, toBeStaked);
 
-    await customToken.allowance(owner.address, customToken.address);
     await customToken.stakeAll();
 
     const staked = await customToken.stakeOf(owner.address);
 
     expect(staked).to.be.equal(toBeStaked);
+  })
+  it("should revert staking tokens when allowance is not enough", async () => {
+    const [owner] = await ethers.getSigners();
+
+    let toBeStaked = await customToken.balanceOf(owner.address);
+    toBeStaked = toBeStaked.sub(1);
+
+    await customToken.approve(customToken.address, toBeStaked);
+
+    expect(
+      customToken.stakeAll()
+    ).to.be.revertedWith("Insufficient Allowance");
   })
 })
