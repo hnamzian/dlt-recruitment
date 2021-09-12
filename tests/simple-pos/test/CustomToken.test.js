@@ -61,6 +61,23 @@ describe("CustomToken - Stake", async () => {
 
     expect(
       customToken.stakeAll()
-    ).to.be.revertedWith("Insufficient Allowance");
+    ).to.be.revertedWith("CustomToken: Insufficient Allowance");
+  })
+  it("should unstaked all staked tokens", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const toBeStaked = await customToken.balanceOf(owner.address);
+
+    await customToken.approve(customToken.address, toBeStaked);
+
+    await customToken.stakeAll();
+
+    await customToken.unstakeAll();
+
+    const balance = await customToken.balanceOf(owner.address);
+    expect(balance).to.be.equal(toBeStaked);
+
+    const staked = await customToken.stakeOf(owner.address);
+    expect(staked).to.be.equal(0);
   })
 })
