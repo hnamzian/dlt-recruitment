@@ -172,7 +172,7 @@ contract CustomToken is ERC20, Ownable {
             if (nCoinSeconds > _stakeMaxAge) nCoinSeconds = _stakeMaxAge;
 
             _coinAge = _coinAge.add(
-                uint256(_stakes[_address][i].amount) * nCoinSeconds.div(1 days)
+                uint256(_stakes[_address][i].amount).mul(nCoinSeconds).div(1 days)
             );
         }
 
