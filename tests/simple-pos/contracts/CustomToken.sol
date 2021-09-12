@@ -11,6 +11,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
  */
 contract CustomToken is ERC20, Ownable {
     using SafeMath for uint64;
+    using SafeMath for uint256;
 
     uint256 internal _minTotalSupply;
     uint256 internal _maxTotalSupply;
