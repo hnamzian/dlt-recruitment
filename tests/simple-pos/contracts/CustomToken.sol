@@ -28,6 +28,10 @@ contract CustomToken is ERC20, Ownable {
 
     mapping(address => stakeStruct[]) internal _stakes;
 
+    // total amount of tokens rewarded to each staker address
+    mapping(address => uint256) internal _rewards;
+    uint256 internal _totalRewards;
+
     function initialize(
         address sender,
         uint256 minTotalSupply,
@@ -59,6 +63,14 @@ contract CustomToken is ERC20, Ownable {
             stake = stake.add(uint256(_stakes[account][i].amount));
         }
         return stake;
+    }
+
+    function rewardsOf(address rewardee_) public view returns (uint256) {
+        return _rewards[rewardee_];
+    }
+
+    function totalRewards() public view returns (uint256) {
+        return _totalRewards;
     }
 
     function stakeAll() public returns (bool) {
