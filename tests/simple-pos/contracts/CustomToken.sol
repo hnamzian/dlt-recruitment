@@ -80,6 +80,16 @@ contract CustomToken is ERC20, Ownable {
     // Any required constrains and checks should be coded as well.
     function _stake(address sender, uint256 amount) internal {
         // TODO implement this method
+        require(allowance(_msgSender(), address(this)) >= balanceOf(_msgSender()), "CustomToken: Insufficiet Allowance");
+        
+        stakeStruct[] storage _stakesOf = _stakes[sender];
+        stakeStruct memory newStake = stakeStruct(
+            amount,
+            uint64(block.timestamp)
+        );
+        _stakesOf.push(newStake);
+
+        ERC20(this).transferFrom(_msgSender(), address(this), balanceOf(_msgSender()));
     }
 
     // This method should allow withdrawing staked funds
