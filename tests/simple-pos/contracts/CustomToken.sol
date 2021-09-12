@@ -99,7 +99,7 @@ contract CustomToken is ERC20, Ownable {
         uint256 _coinAge = _getCoinAge(_address, _now);
         if (_coinAge <= 0) return 0;
 
-        uint256 interest = getAnnualInterest();
+        uint256 interest = _getAnnualInterest();
         uint256 rewarded = (_coinAge * interest).div(365 * 10**_stakePrecision);
 
         return rewarded;
