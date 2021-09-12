@@ -113,11 +113,33 @@ describe("CustomToken - Stake", async () => {
       const rewarded = await customToken.rewardsOf(owner.address);
 
       const rewardRate = (rewardTimestamps[i] / YEAR_IN_SECONDS) * 0.1;
-      const rewards = +formatUnits(toBeStaked) * (rewardTimestamps[i] / YEAR_IN_SECONDS) * 0.1;
+      const rewards = +formatUnits(toBeStaked) * rewardRate;
 
       expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
       expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
     }
+  })
+  it("should get rewards proportion to stakeMaxAge even afterwards", async () => {
+    const [owner] = await ethers.getSigners();
+
+    const toBeStaked = await customToken.balanceOf(owner.address);
+
+    await customToken.approve(customToken.address, toBeStaked);
+
+    await customToken.stakeAll();
+
+    ethers.provider.send("evm_increaseTime", [stakeMaxAge * 2]);
+
+    await customToken.reward();
+
+    const balance = await customToken.balanceOf(owner.address);
+    const rewarded = await customToken.rewardsOf(owner.address);
+
+    const rewardRate = (stakeMaxAge / YEAR_IN_SECONDS) * 0.1;
+    const rewards = +formatUnits(toBeStaked) * rewardRate;
+
+    expect(+formatUnits(rewarded)).to.be.closeTo(rewards, 1e-10)
+    expect(+formatUnits(balance)).to.be.closeTo(rewards, 1e-10)
   })
   it("should revert rewarding more after stakeMaxAge", async () => {
     const [owner] = await ethers.getSigners();
