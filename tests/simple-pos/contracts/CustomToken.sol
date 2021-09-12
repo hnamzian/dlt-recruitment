@@ -1,8 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
 
-import "./ERC20.sol";
-import "./Ownable.sol";
-import "./SafeMath.sol";
+pragma solidity 0.5.16;
+
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
  * @dev Extension of {ERC20} that adds staking mechanism.
