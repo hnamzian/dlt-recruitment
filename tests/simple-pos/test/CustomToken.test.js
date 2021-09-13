@@ -60,7 +60,7 @@ describe("CustomToken - Stake", async () => {
 
     await customToken.approve(customToken.address, toBeStaked);
 
-    expect(
+    await expect(
       customToken.stakeAll()
     ).to.be.revertedWith("CustomToken: Insufficient Allowance");
   })
@@ -84,7 +84,7 @@ describe("CustomToken - Stake", async () => {
   it("should revert unstaking token when staked balance is zero", async () => {
     const [owner] = await ethers.getSigners();
 
-    expect(
+    await expect(
       customToken.unstakeAll()
     ).to.be.revertedWith("CustomToken: No Staked Balance");
   })
